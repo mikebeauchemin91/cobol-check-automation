@@ -1,3 +1,4 @@
+
 name: COBOL Check Automation
 
 on:
@@ -7,9 +8,53 @@ on:
 jobs:
   cobol-check:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Confirm workflow is running
-        run: echo "COBOL Check workflow is running successfully."
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install GnuCOBOL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnucobol
+
+      - name: Install Zowe CLI
+        run: npm install -g @zowe/cli
+
+      - name: Configure and test mainframe connection
+        env:
+          ZOWE_OPT_USER: ${{ secrets.ZOWE_USERNAME }}
+          ZOWE_OPT_PASSWORD: ${{ secrets.ZOWE_PASSWORD }}
+        run: |
+          mkdir -p ~/.zowe
+          cat > ~/.zowe/zowe.config.json <<'EOF'
+          {
+            "profiles": {
+              "zosmf": {
+                "type": "zosmf",
+                "properties": {
+                  "host": "204.90.115.200",
+                  "port": 10443,
+                  "rejectUnauthorized": false
+                }
+              }
+            },
+            "defaults": {
+              "zosmf": "zosmf"
+            },
+            "autoStore": false
+          }
+          EOF
+
+          zowe zosmf check status
+
+      - name: Run COBOL Check tests
+        run: |
+          chmod +x .github/scripts/mainframe_operations.sh
+          .github/scripts/mainframe_operations.sh
