@@ -42,6 +42,15 @@ zowe zos-files upload file-to-data-set \
 
 # Submit JCL and display job output
 echo "Submitting DEPTPAY JCL..."
+echo "Checking uploaded JCL encoding..."
+
+zowe zos-files download data-set \
+    "$ZOWE_USERNAME.JCL(DEPTPAY)" \
+    --binary \
+    --file /tmp/DEPTPAY.jcl \
+    --overwrite
+
+od -An -tx1 -N 16 /tmp/DEPTPAY.jcl
 
 zowe zos-jobs submit data-set \
     "$ZOWE_USERNAME.JCL(DEPTPAY)" \
