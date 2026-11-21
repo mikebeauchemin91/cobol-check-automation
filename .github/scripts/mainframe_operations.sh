@@ -24,7 +24,7 @@ chmod +x .github/scripts/zowe_operations.sh
 echo "Running COBOL Check for DEPTPAY..."
 
 zowe zos-ssh issue command \
-    "cd $MAINFRAME_DIR && java -jar bin/cobol-check-0.2.19.jar -p DEPTPAY && sed 's/^ /       /' testruns/CC##99.CBL > CC##99.CBL && ls -l CC##99.CBL" \
+    "cd $MAINFRAME_DIR && java -jar bin/cobol-check-0.2.19.jar -p DEPTPAY && cp testruns/CC##99.CBL CC##99.CBL && ls -l CC##99.CBL"
     --host 204.90.115.200 \
     --port 22 \
     --user "$ZOWE_USERNAME" \
