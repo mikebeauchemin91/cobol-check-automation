@@ -18,7 +18,7 @@ fi
 
 # Remove the obsolete nested DEPTPAY test suite
 echo "Removing obsolete DEPTPAY test suite..."
-zowe zos-files delete uss-file "$MAINFRAME_DIR/src/test/cobol/DEPTPAY/DEPTPAY.cut" || true
+zowe zos-files delete uss-file "$MAINFRAME_DIR/src/test/cobol/DEPTPAY/DEPTPAY.cut" --for-sure || true
 
 # Upload COBOL Check files
 echo "Uploading COBOL Check files..."
