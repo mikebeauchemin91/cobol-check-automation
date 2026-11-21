@@ -37,7 +37,8 @@ echo "Uploading DEPTPAY JCL..."
 
 zowe zos-files upload file-to-data-set \
     "$ROOT_DIR/DEPTPAY.JCL" \
-    "$ZOWE_USERNAME.JCL(DEPTPAY)"
+    "$ZOWE_USERNAME.JCL(DEPTPAY)" \
+    --encoding IBM-1047
 
 # Submit JCL and display job output
 echo "Submitting DEPTPAY JCL..."
