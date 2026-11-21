@@ -1,43 +1,50 @@
+
 #!/bin/bash
 
 set -e
 
 echo "Starting COBOL Check operations..."
 
-cd "$(dirname "$0")/../.."
+ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$ROOT_DIR"
 
-echo "Working directory: $(pwd)"
-
-if ! command -v java >/dev/null 2>&1; then
-    echo "ERROR: Java is not installed."
+if [ -z "$ZOWE_USERNAME" ] || [ -z "$ZOWE_PASSWORD" ]; then
+    echo "ERROR: Zowe credentials are missing."
     exit 1
 fi
 
-if ! command -v cobc >/dev/null 2>&1; then
-    echo "ERROR: GnuCOBOL is not installed."
-    exit 1
-fi
+LOWERCASE_USERNAME=$(echo "$ZOWE_USERNAME" | tr '[:upper:]' '[:lower:]')
+MAINFRAME_DIR="/z/$LOWERCASE_USERNAME/cobolcheck"
 
-java -version
-cobc --version
+# Upload COBOL Check project to mainframe USS
+echo "Uploading COBOL Check files to USS..."
+chmod +x .github/scripts/zowe_operations.sh
+.github/scripts/zowe_operations.sh
 
-cd cobol-check
+# Generate DEPTPAY test program on the mainframe
+echo "Running COBOL Check for DEPTPAY..."
 
-COBOL_CHECK_JAR="bin/cobol-check-0.2.19.jar"
+zowe zos-ssh issue command \
+    "cd $MAINFRAME_DIR && java -jar bin/cobol-check-0.2.19.jar -p DEPTPAY && cp testruns/CC##99.CBL CC##99.CBL && ls -l CC##99.CBL" \
+    --host 204.90.115.200 \
+    --port 22 \
+    --user "$ZOWE_USERNAME" \
+    --password "$ZOWE_PASSWORD" \
+    --insecure
 
-if [ ! -f "$COBOL_CHECK_JAR" ]; then
-    echo "ERROR: COBOL Check JAR not found."
-    exit 1
-fi
+# Upload DEPTPAY JCL to the mainframe
+echo "Uploading DEPTPAY JCL..."
 
-chmod +x scripts/linux_gnucobol_run_tests
+zowe zos-files upload file-to-data-set \
+    "$ROOT_DIR/DEPTPAY.JCL" \
+    "$ZOWE_USERNAME.JCL(DEPTPAY)"
 
-for program in NUMBERS ALPHA; do
-    echo "-----------------------------------"
-    echo "Running COBOL Check for $program"
+# Submit JCL and display job output
+echo "Submitting DEPTPAY JCL..."
 
-    java -jar "$COBOL_CHECK_JAR" -p "$program"
-done
+zowe zos-jobs submit data-set \
+    "$ZOWE_USERNAME.JCL(DEPTPAY)" \
+    --view-all-spool-content
 
-echo "-----------------------------------"
-echo "COBOL Check operations completed."
+echo "DEPTPAY mainframe operations completed."
+
