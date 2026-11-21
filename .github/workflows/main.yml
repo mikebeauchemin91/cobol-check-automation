@@ -1,4 +1,3 @@
-
 name: COBOL Check Automation
 
 on:
@@ -54,7 +53,7 @@ jobs:
 
           zowe zosmf check status
 
-           - name: Run COBOL Check tests
+      - name: Run COBOL Check tests
         env:
           ZOWE_USERNAME: ${{ secrets.ZOWE_USERNAME }}
           ZOWE_PASSWORD: ${{ secrets.ZOWE_PASSWORD }}
@@ -62,4 +61,5 @@ jobs:
           ZOWE_OPT_PASSWORD: ${{ secrets.ZOWE_PASSWORD }}
         run: |
           chmod +x .github/scripts/mainframe_operations.sh
+          chmod +x .github/scripts/zowe_operations.sh
           .github/scripts/mainframe_operations.sh
